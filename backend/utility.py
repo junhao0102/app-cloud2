@@ -18,7 +18,7 @@ def set_stdout_logger():
     stdout_handler.setLevel(logging.INFO)
     stdout_handler.setFormatter(formatter)
 
-    logger.addHandler(stdout_handler)
+    logger.addHandler(stdout_handler)   
 
     return logger
 

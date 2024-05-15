@@ -1,6 +1,10 @@
 '''
 fast api
 '''
+
+# -*- coding: utf-8 -*-
+
+
 import os
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
@@ -48,12 +52,18 @@ job = None  # 排程工作
 job_tag = []  # 排程工作的標間
 
 
+
+@app.on_event("startup")
+async def startup_event():
+    # 應用啟動時執行創建資料表
+    create_msg = create_main(logger)
+    logger.info(create_msg)
+
 # ----- step 1. 新增DB資料表 -----
 @app.get("/create/new_table")
 async def create_table():
     create_msg = create_main(logger)
     return create_msg
-
 
 @app.get("/create/init_part")
 async def init_part_list():
