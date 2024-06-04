@@ -1,10 +1,6 @@
 '''
 fast api
 '''
-
-# -*- coding: utf-8 -*-
-
-
 import os
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
@@ -34,7 +30,7 @@ from save_data import use_device_id
 
 # export
 from statistic_fun import statistic_part, machine_healthy_val
-from save_data import insert_huan_jia_data, insert_device
+
 
 # 定期執行
 from statistic_fun import update_main
@@ -51,19 +47,18 @@ app = FastAPI()
 job = None  # 排程工作
 job_tag = []  # 排程工作的標間
 
-
-
 @app.on_event("startup")
 async def startup_event():
-    # 應用啟動時執行創建資料表
     create_msg = create_main(logger)
-    logger.info(create_msg)
+    logger.info(f"Table Creation Message: {create_msg}")
+
 
 # ----- step 1. 新增DB資料表 -----
 @app.get("/create/new_table")
 async def create_table():
     create_msg = create_main(logger)
     return create_msg
+
 
 @app.get("/create/init_part")
 async def init_part_list():
@@ -84,6 +79,7 @@ class NewPartItem(BaseModel):
 async def insert_new_part(item: NewPartItem):
     api_dict = item.dict()
     insert_msg = insert_main(api_dict, 'part_list', logger)
+    print(insert_msg)
     return insert_msg
 
 
@@ -286,10 +282,10 @@ async def export_insert_device():
     return msg_dict
 
 
-@app.post("/export/insert_huan_jia")
-async def export_insert_huan_jia_data():
-    msg_dict = insert_huan_jia_data(logger)
-    return msg_dict
+# @app.post("/export/insert_huan_jia")
+# async def export_insert_huan_jia_data():
+#     msg_dict = insert_huan_jia_data(logger)
+#     return msg_dict
 
 
 # -------------------- 定時重新執行 ---------
