@@ -156,12 +156,10 @@ def create_part_table():
 # 零件列表
 def create_part_list():
     sql = """CREATE TABLE part_list(
-    id int,
-    part_name varchar(30),
-    use_state varchar(30),
-    remark varchar(255), 
-    CONSTRAINT unique_part_id UNIQUE (id), 
-    CONSTRAINT unique_part_name UNIQUE (part_name)
+    id SERIAL PRIMARY KEY,   
+    part_name VARCHAR(30),
+    use_state VARCHAR(30),
+    remark VARCHAR(255)
     );"""
     return sql
 
@@ -348,10 +346,8 @@ def insert_part_data(df_data: Dict):
 
 # 新增零件列表
 def insert_part_list(df_data: Dict):
-    n_sql = f"""INSERT INTO part_list(id, part_name, use_state, remark)
-        VALUES('{df_data["id"]}',
-            '{df_data["part_name"]}',
-            '{df_data["use_state"]}', '{df_data["remark"]}')"""
+    n_sql = f"""INSERT INTO part_list(part_name, use_state, remark)
+        VALUES('{df_data["part_name"]}','{df_data["use_state"]}', '{df_data["remark"]}')"""
     return n_sql
 
 
@@ -360,13 +356,14 @@ def read_part_list(logger):
     sql = """SELECT * FROM part_list"""
     msg = read_config(sql, False, logger)
     part_list, db_msg = link_Postgres(**msg)
-    df_dict = part_list.to_dict('records')
+    df_dict = part_list.to_dict("records")
     read_msg = {
         "state": db_msg["state"],
         "data": df_dict,
         "message": db_msg["message"],
     }
     return read_msg
+
 
 # 初始零件列表
 def init_part_data(logger):
@@ -585,8 +582,8 @@ def read_machine_list_data(logger):
         sql = """SELECT * FROM machine_list"""
         msg = read_config(sql, False, logger)
         m_data, db_msg = link_Postgres(**msg)
-        df_data = m_data.to_dict()
-        df_dict["data"] = [df_data]
+        df_data = m_data.to_dict("records")
+        df_dict["data"] = df_data
         msg = "Finished reading data"
         df_dict["message"] = msg
         df_dict["state"] = True
@@ -735,7 +732,6 @@ def del_part_item(del_dict: Dict, logger):
     return msg_dict
 
 
-
 # 刪除維修資料
 def del_repair_data(del_dict: Dict, logger):
     sql = f"""DELETE FROM repair_table 
@@ -777,20 +773,18 @@ def del_machine_table_data(del_dict: Dict, logger):
 def del_machine_list_data(del_dict: Dict, logger):
     # delete machine list data
     ml_sql = f"""DELETE FROM machine_list
-                WHERE machine_name = '{del_dict['machine_name']}' 
-                AND device_id = {del_dict['device_id']}"""
+                WHERE machine_name = '{del_dict['machine_name']}' """
     db_msg1 = read_config(ml_sql, True, logger)
     m1_data, d1_msg = link_Postgres(**db_msg1)
     if d1_msg["state"]:
         logger.info("Delete data of machine list completed")
         # delete machine table data
         mt_sql = f"""DELETE FROM machine_table
-                    WHERE machine_name = '{del_dict['machine_name']}' 
-                    AND device_id = {del_dict['device_id']}"""
+                    WHERE machine_name = '{del_dict['machine_name']}'"""
         db_msg2 = read_config(mt_sql, True, logger)
         m2_data, d2_msg = link_Postgres(**db_msg2)
         if d2_msg["state"]:
-            msg = f'Delete the machine_name({del_dict["machine_name"]}) and device_id({del_dict["device_id"]})'
+            msg = f'Delete the machine_name({del_dict["machine_name"]})'
             msg_dict = {"message": msg, "state": True}
             logger.info("Delete data of machine table completed")
             return msg_dict

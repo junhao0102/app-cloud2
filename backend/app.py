@@ -243,7 +243,6 @@ async def del_mt_data(item: DelMachineTableData):
 # 刪除 machine list data
 class DelMachineListData(BaseModel):
     machine_name: str
-    device_id: int
 
 
 @app.post("/del/machine_list_data")
