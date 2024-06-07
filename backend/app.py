@@ -79,7 +79,6 @@ class NewPartItem(BaseModel):
 async def insert_new_part(item: NewPartItem):
     api_dict = item.dict()
     insert_msg = insert_main(api_dict, 'part_list', logger)
-    print(insert_msg)
     return insert_msg
 
 
@@ -217,7 +216,6 @@ async def del_rep_data(item: DelRepairData):
 
 # 刪除零件列表
 class DelPartItem(BaseModel):
-    id: int
     part_name: str
 
 
