@@ -1,6 +1,7 @@
-'''
+"""
 fast api
-'''
+"""
+
 import os
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
@@ -16,8 +17,14 @@ from save_data import del_part_item, del_machine_table_data, del_machine_list_da
 from save_data import update_part_item, update_machine_table
 
 # read
-from save_data import read_part_list, read_machine_table, read_machine_list_data, \
-read_machine_state, read_repair_data, del_repair_data
+from save_data import (
+    read_part_list,
+    read_machine_table,
+    read_machine_list_data,
+    read_machine_state,
+    read_repair_data,
+    del_repair_data,
+)
 
 # read_part_msg
 
@@ -41,11 +48,12 @@ import time
 import json
 from utility import set_logger
 
-logger = set_logger('api_logger')
+logger = set_logger("api_logger")
 path = os.getcwd()
 app = FastAPI()
 job = None  # 排程工作
 job_tag = []  # 排程工作的標間
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -78,7 +86,7 @@ class NewPartItem(BaseModel):
 @app.post("/insert/new_part")
 async def insert_new_part(item: NewPartItem):
     api_dict = item.dict()
-    insert_msg = insert_main(api_dict, 'part_list', logger)
+    insert_msg = insert_main(api_dict, "part_list", logger)
     return insert_msg
 
 
@@ -95,16 +103,21 @@ class NewRepair(BaseModel):
 @app.post("/insert/new_repair")
 async def insert_new_repair(item: NewRepair):
     api_dict = item.dict()
-    insert_msg = insert_main(api_dict, 'repair', logger)
-    msg_dict = add_pair_data(api_dict, logger)
-    if insert_msg['state'] and msg_dict['state']:
-        insert_dict = {'message': [{'insert_message': insert_msg['message']},
-                                   {'update_message': msg_dict['message']}],
-                       'state': True}
+    insert_msg = insert_main(api_dict, "repair", logger)
+    if insert_msg["state"]:
+        insert_dict = {
+            "message": [
+                {"insert_message": insert_msg["message"]},
+            ],
+            "state": True,
+        }
     else:
-        insert_dict = {'message': [{'insert_message': insert_msg['message']},
-                                   {'update_message': msg_dict['message']}],
-                       'state': False}
+        insert_dict = {
+            "message": [
+                {"insert_message": insert_msg["message"]},
+            ],
+            "state": False,
+        }
     return insert_dict
 
 
@@ -170,8 +183,7 @@ class UpdatePartItem(BaseModel):
 @app.post("/update/update_part_item")
 async def update_p_item(item: UpdatePartItem):
     api_dict = item.dict()
-    msg_dict = update_part_item(
-        api_dict, logger)
+    msg_dict = update_part_item(api_dict, logger)
     return msg_dict
 
 
@@ -222,8 +234,7 @@ class DelPartItem(BaseModel):
 @app.post("/del/del_part_item")
 async def del_p_item(item: DelPartItem):
     api_dict = item.dict()
-    msg_dict = del_part_item(
-        api_dict, logger)
+    msg_dict = del_part_item(api_dict, logger)
     return msg_dict
 
 
@@ -300,7 +311,7 @@ def schedule_train_model(tag):
         time.sleep(1)
 
 
-@app.get('/stop_schedule/{tag}')
+@app.get("/stop_schedule/{tag}")
 def stop_schedule(tag: str = None):
     global job, job_tag
     print(job)
@@ -309,23 +320,23 @@ def stop_schedule(tag: str = None):
         schedule.clear(tag)
         job_tag.remove(tag)
     else:
-        print('There is no job.')
-    print('stop job!')
+        print("There is no job.")
+    print("stop job!")
     return {"message": "Stop scheduling."}
 
 
-@app.get('/list_schedule/')
+@app.get("/list_schedule/")
 def list_schedule():
     global job_tag
     print(job_tag)
     return {"jobs": json.dumps(job_tag)}
 
 
-@app.get('/schedule_retrain/{tag}')
+@app.get("/schedule_retrain/{tag}")
 def schedule_retrain_every(background_tasks: BackgroundTasks, tag: str):
     background_tasks.add_task(schedule_train_model, tag)
     return {"message": "Start retraining."}
 
 
-if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

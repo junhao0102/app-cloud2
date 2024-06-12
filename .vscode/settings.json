@@ -1,0 +1,6 @@
+{
+    "editor.fontSize": 25,
+    "[python]": {
+        "editor.defaultFormatter": "Jota0222.multi-formatter"
+    }
+}
